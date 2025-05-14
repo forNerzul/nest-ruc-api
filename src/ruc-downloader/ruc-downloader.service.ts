@@ -212,7 +212,7 @@ export class RucDownloaderService implements OnModuleInit {
 
       zip.extractAllTo(targetDir, true);
       this.log(`Successfully extracted ${fileName} to ${targetDir}`);
-      
+
       // Return the target directory where files were extracted
       return targetDir;
     } catch (error) {
@@ -227,10 +227,11 @@ export class RucDownloaderService implements OnModuleInit {
   private async processExtractedFiles(extractedDir: string): Promise<void> {
     try {
       this.log(`Procesando archivos extraídos en: ${extractedDir}`);
-      
+
       // Usar el servicio RucParser para procesar los archivos
-      const stats = await this.rucParserService.processRucDirectory(extractedDir);
-      
+      const stats =
+        await this.rucParserService.processRucDirectory(extractedDir);
+
       this.log(
         `Proceso de base de datos completado: ${stats.processed} contribuyentes procesados, ${stats.errors} errores`,
       );

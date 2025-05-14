@@ -25,7 +25,10 @@ export class RucParserService {
    * @param filePath Ruta del archivo a procesar
    * @param source Fuente del archivo (ruc0, ruc1, etc.)
    */
-  async processRucFile(filePath: string, source: string): Promise<{ processed: number; errors: number }> {
+  async processRucFile(
+    filePath: string,
+    source: string,
+  ): Promise<{ processed: number; errors: number }> {
     this.logger.log(`Procesando archivo: ${filePath}`);
     let processed = 0;
     let errors = 0;
@@ -86,7 +89,9 @@ export class RucParserService {
       await this.saveBatch(batch);
     }
 
-    this.logger.log(`Procesamiento completado: ${processed} contribuyentes procesados, ${errors} errores`);
+    this.logger.log(
+      `Procesamiento completado: ${processed} contribuyentes procesados, ${errors} errores`,
+    );
     return { processed, errors };
   }
 
@@ -94,7 +99,9 @@ export class RucParserService {
    * Procesa todos los archivos TXT en una carpeta de RUC específica
    * @param rucDir Directorio que contiene los archivos TXT (ejemplo: data/ruc0)
    */
-  async processRucDirectory(rucDir: string): Promise<{ processed: number; errors: number }> {
+  async processRucDirectory(
+    rucDir: string,
+  ): Promise<{ processed: number; errors: number }> {
     let totalProcessed = 0;
     let totalErrors = 0;
 
@@ -104,7 +111,9 @@ export class RucParserService {
     }
 
     const source = path.basename(rucDir); // ruc0, ruc1, etc.
-    const files = fs.readdirSync(rucDir).filter(file => file.endsWith('.txt'));
+    const files = fs
+      .readdirSync(rucDir)
+      .filter((file) => file.endsWith('.txt'));
 
     this.logger.log(`Procesando ${files.length} archivos en ${rucDir}`);
 
@@ -122,7 +131,9 @@ export class RucParserService {
    * Procesa todas las carpetas de RUC extraídas
    * @param dataDir Directorio raíz que contiene las carpetas de RUC (ejemplo: data/)
    */
-  async processAllRucDirectories(dataDir: string = path.join(process.cwd(), 'data')): Promise<{
+  async processAllRucDirectories(
+    dataDir: string = path.join(process.cwd(), 'data'),
+  ): Promise<{
     processed: number;
     errors: number;
   }> {
@@ -136,8 +147,8 @@ export class RucParserService {
 
     const dirs = fs
       .readdirSync(dataDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory() && dirent.name.startsWith('ruc'))
-      .map(dirent => dirent.name);
+      .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith('ruc'))
+      .map((dirent) => dirent.name);
 
     this.logger.log(`Encontradas ${dirs.length} carpetas RUC en ${dataDir}`);
 
@@ -173,7 +184,9 @@ export class RucParserService {
         }
       });
     } catch (error) {
-      this.logger.error(`Error al guardar lote en la base de datos: ${error.message}`);
+      this.logger.error(
+        `Error al guardar lote en la base de datos: ${error.message}`,
+      );
       throw error;
     }
   }

@@ -4,10 +4,7 @@ import { RucDownloaderService } from './ruc-downloader.service';
 import { RucParserModule } from '../ruc-parser/ruc-parser.module';
 
 @Module({
-  imports: [
-    ScheduleModule.forRoot(),
-    RucParserModule,
-  ],
+  imports: [ScheduleModule.forRoot(), RucParserModule],
   providers: [RucDownloaderService],
   exports: [RucDownloaderService],
 })

@@ -1,17 +1,32 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { ContribuyentesService } from './contribuyentes.service';
 
 @Controller('contribuyentes')
 export class ContribuyentesController {
+  constructor(private readonly contribuyentesService: ContribuyentesService) {}
+
   @Get()
-  getContribuyentes() {
-    const contribuyente = {
-      ruc: '1234567890',
-      nombre: 'Juan Perez',
-      tipo_documento: 1,
-      numero_documento: '1234567890',
-      estado: 'activo',
-      fecha_actualizacion: new Date(),
-    };
+  async getContribuyentes() {
+    return this.contribuyentesService.findAll();
+  }
+
+  @Get('ruc/:ruc')
+  async getContribuyenteByRuc(@Param('ruc') ruc: string) {
+    const contribuyente = await this.contribuyentesService.findByRuc(ruc);
+    if (!contribuyente) {
+      throw new NotFoundException(`Contribuyente con RUC ${ruc} no encontrado`);
+    }
+    return contribuyente;
+  }
+
+  @Get('cedula/:cedula')
+  async getContribuyenteByCedula(@Param('cedula') cedula: string) {
+    const contribuyente = await this.contribuyentesService.findByCedula(cedula);
+    if (!contribuyente) {
+      throw new NotFoundException(
+        `Contribuyente con cédula ${cedula} no encontrado`,
+      );
+    }
     return contribuyente;
   }
 }

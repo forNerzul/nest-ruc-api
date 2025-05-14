@@ -39,14 +39,22 @@ export class RucDownloaderService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    // Run immediately on startup
-    try {
-      await this.downloadAllRucFiles();
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      this.log(`Initial download failed: ${errorMessage}`);
-    }
+    // Iniciar la descarga en segundo plano sin bloquear el inicio de la aplicación
+    this.log('Iniciando proceso de descarga en segundo plano');
+    this.startBackgroundDownload();
+  }
+
+  private startBackgroundDownload() {
+    // Ejecutar en segundo plano
+    setTimeout(async () => {
+      try {
+        await this.downloadAllRucFiles();
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        this.log(`Background download failed: ${errorMessage}`);
+      }
+    }, 100); // Demora mínima para asegurar que no bloquee el inicio
   }
 
   @Cron('0 1 * * *') // Run at 1:00 AM every day

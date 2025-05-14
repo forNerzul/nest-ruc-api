@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo para los contribuyentes de RUC
+model Contribuyente {
+  id            Int      @id @default(autoincrement())
+  ruc           String   @unique // RUC del contribuyente
+  nombre        String   // Nombre/Razón social
+  digitoVerif   String   // Dígito verificador
+  rucAnterior   String?  // RUC Anterior (opcional)
+  estado        String   // Estado (ACTIVO, etc.)
+  fechaCreacion DateTime @default(now()) // Fecha de creación en la DB
+  fechaUpdate   DateTime @updatedAt // Fecha de última actualización
+  fuente        String   // Fuente de datos (ruc0, ruc1, etc.)
+
+  @@index([ruc])
+  @@map("contribuyentes")
+}

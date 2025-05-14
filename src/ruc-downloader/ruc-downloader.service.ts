@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as AdmZip from 'adm-zip';
 import { mkdirp } from 'mkdirp';
 import * as cheerio from 'cheerio';
+import { RucParserService } from '../ruc-parser/ruc-parser.service';
 
 interface DownloadUrlInfo {
   url: string;
@@ -28,7 +29,10 @@ export class RucDownloaderService implements OnModuleInit {
     scheduleTime: '0 1 * * *',
   };
 
-  constructor(private schedulerRegistry: SchedulerRegistry) {
+  constructor(
+    private schedulerRegistry: SchedulerRegistry,
+    private rucParserService: RucParserService,
+  ) {
     // Ensure directories exist
     mkdirp.sync(this.config.downloadDir);
     mkdirp.sync(this.config.extractDir);
@@ -192,7 +196,7 @@ export class RucDownloaderService implements OnModuleInit {
   }
 
   // Extract a zip file
-  private extractZip(zipPath: string): void {
+  private async extractZip(zipPath: string): Promise<string> {
     try {
       const fileName = path.basename(zipPath);
       this.log(`Extracting ${fileName}...`);
@@ -208,10 +212,32 @@ export class RucDownloaderService implements OnModuleInit {
 
       zip.extractAllTo(targetDir, true);
       this.log(`Successfully extracted ${fileName} to ${targetDir}`);
+      
+      // Return the target directory where files were extracted
+      return targetDir;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       this.log(`Error extracting ${zipPath}: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  // Process extracted files and save to database
+  private async processExtractedFiles(extractedDir: string): Promise<void> {
+    try {
+      this.log(`Procesando archivos extraídos en: ${extractedDir}`);
+      
+      // Usar el servicio RucParser para procesar los archivos
+      const stats = await this.rucParserService.processRucDirectory(extractedDir);
+      
+      this.log(
+        `Proceso de base de datos completado: ${stats.processed} contribuyentes procesados, ${stats.errors} errores`,
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.log(`Error procesando archivos extraídos: ${errorMessage}`);
       throw error;
     }
   }
@@ -292,12 +318,14 @@ export class RucDownloaderService implements OnModuleInit {
       // Download each file and extract it
       const successfulDownloads: string[] = [];
       const failedDownloads: string[] = [];
+      const processedDirs: string[] = [];
 
       for (const [rucNumber, urlInfo] of rucFileMap.entries()) {
         try {
           this.log(`Processing RUC${rucNumber} file...`);
           const zipPath = await this.downloadFile(urlInfo);
-          this.extractZip(zipPath);
+          const extractedDir = await this.extractZip(zipPath);
+          processedDirs.push(extractedDir);
           successfulDownloads.push(rucNumber);
         } catch (error) {
           const errorMessage =
@@ -320,6 +348,18 @@ export class RucDownloaderService implements OnModuleInit {
         this.log(
           `Failed to process RUC numbers: ${failedDownloads.join(', ')}`,
         );
+      }
+
+      // Procesar los archivos extraídos y guardarlos en la base de datos
+      this.log('Iniciando procesamiento de datos para la base de datos...');
+      for (const dir of processedDirs) {
+        try {
+          await this.processExtractedFiles(dir);
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          this.log(`Error procesando directorio ${dir}: ${errorMessage}`);
+        }
       }
 
       const endTime = new Date();

@@ -23,13 +23,44 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+API NestJS para descarga y procesamiento de archivos RUC de Paraguay.
+
+## Características
+
+- Descarga automática de archivos RUC desde la web de DNIT Paraguay
+- Descompresión de archivos ZIP
+- Procesamiento de datos y almacenamiento en PostgreSQL
+- Programación de tareas con CRON (descarga diaria automática)
+- Estructura de datos optimizada para consultas
+
+## Requisitos
+
+- Node.js (v16 o superior)
+- PostgreSQL (v12 o superior)
+- Yarn o NPM
 
 ## Project setup
 
 ```bash
+# Instalar dependencias
 $ yarn install
+
+# Configurar la base de datos (asegúrate de tener PostgreSQL funcionando)
+$ npx prisma migrate dev
+
+# O ejecutar la migración directamente en producción
+$ npx prisma migrate deploy
 ```
+
+## Configuración de variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+
+```
+DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/ruc_db?schema=public"
+```
+
+Reemplaza `usuario`, `contraseña` y `ruc_db` con tus credenciales y nombre de base de datos.
 
 ## Compile and run the project
 
@@ -43,6 +74,21 @@ $ yarn run start:dev
 # production mode
 $ yarn run start:prod
 ```
+
+## Configuración de CRON
+
+Por defecto, la aplicación descargará y procesará los archivos RUC:
+- Al iniciar la aplicación
+- Diariamente a la 1:00 AM (configurable en `src/ruc-downloader/ruc-downloader.service.ts`)
+
+## Estructura de directorios
+
+- `downloads/`: Almacena los archivos ZIP descargados
+- `data/`: Contiene los archivos descomprimidos organizados por carpetas (ruc0, ruc1, etc.)
+- `src/ruc-downloader/`: Servicio para descargar y descomprimir archivos RUC
+- `src/ruc-parser/`: Servicio para procesar archivos y guardar en base de datos
+- `src/prisma/`: Servicio de conexión a la base de datos
+- `prisma/`: Esquemas y migraciones de la base de datos
 
 ## Run tests
 
@@ -59,16 +105,7 @@ $ yarn run test:cov
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ yarn install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Cuando estés listo para desplegar tu aplicación NestJS en producción, hay algunos pasos clave que puedes seguir para garantizar que funcione de la manera más eficiente posible. Consulta la [documentación de implementación](https://docs.nestjs.com/deployment) para obtener más información.
 
 ## Resources
 
